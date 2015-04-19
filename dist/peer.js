@@ -60,7 +60,7 @@
     channel : null,
     iceServers : null,
     iceOptions : null,
-    channelUrl : null,
+    signalingServer : null,
     channelProtocols : null,
     remote : null,
     _channelOpen : false,
@@ -107,27 +107,27 @@
     },
 
     connect : function() {
-      var myPeer = this, peerConnectionConfig, remote, channel;
-      if ( !this.remote ) {
-        remote = new RTCPeerConnection({
-          iceServers : this.iceServers
-        });
-        remote.onicecandidate = this._onCandidate.bind(this);
-        remote.onaddstream = this._onRemoteStream.bind(this);
-        this.remote = remote;
+      var myPeer = this, peerConnectionConfig, client, channel;
+      if ( this.media ) {
+        getUserMedia(this.media,
+          this._onLocalMediaSuccess.bind(this),
+          this._onLocalMediaError.bind(this)
+        );
       }
       if ( !this.channel ) {
-        channel = new WebSocket(this.channelUrl, this.channelProtocols);
-        channel.addEventListener('message', this._onChannelMessage.bind(this));
+        channel = new WebSocket(this.signalingServer, this.channelProtocols);
+        channel.addEventListener('message', this._onChannelSignal.bind(this));
         channel.addEventListener('open', this._onChannelOpen.bind(this));
         channel.addEventListener('close', this._onChannelClose.bind(this));
         channel.addEventListener('error', this._onChannelError.bind(this));
         this.channel = channel;
       }
-      getUserMedia(this.media,
-        this._onLocalMediaSuccess.bind(this),
-        this._onLocalMediaError.bind(this)
-      );
+      if ( !this.client ) {
+        client = new RTCPeerConnection({ iceServers : this.iceServers });
+        client.onicecandidate = this._onCandidate.bind(this);
+        client.onaddstream = this._onAddStream.bind(this);
+        this.client = client;
+      }
       return this;
     },
 
@@ -148,13 +148,13 @@
     },
 
     stream : function(mediaStream) {
-      this.remote.addStream(mediaStream);
+      this.client.addStream(mediaStream);
       return this;
     },
 
     _onCandidate : function(e) {
       if ( e.candidate ) {
-        this.channel.send(JSON.stringify({
+        this.channel.send( JSON.stringify({
           type : 'NEW_CANDIDATE',
           candidate : e.candidate
         }));
@@ -163,7 +163,7 @@
       }
     },
 
-    _onRemoteStream : function(e) {
+    _onAddStream : function(e) {
       this.emit('media', { origin : 'remote', media : e.stream });
     },
 
@@ -177,8 +177,13 @@
       this.emit('disconnect', e);
     },
 
-    _onChannelMessage : function(e) {
-      this.emit('signal', e);
+    _onChannelSignal : function(e) {
+      var data = JSON.parse(e.data);
+      switch (data.type) {
+        case : 'NEW_CANDIDATE' :
+          this.client.addIceCandidate(new RTCIceCandidate(data.candidate));
+      }
+      this.emit('signal', e.data);
     },
 
     _onChannelError : function(e) {
@@ -211,7 +216,7 @@ var localVideoEl = document.getElementById('local-video'),
  * channel - Signaling server using websockets.
  */
 var peer = new Peer({
-  channelUrl : 'wss://www.webrtcblueprints.com/chapter1/signaling',
+  signalingServer : 'wss://www.webrtcblueprints.com/chapter1/signaling',
   iceServers : [{ url : 'stun:23.21.150.121' }, { url : 'stun:stun.l.google.com:19302' }],
   media : { video : true, audio : true }
 });
