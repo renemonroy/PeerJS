@@ -1,5 +1,7 @@
 # PeerJS
-Simplifies the process of configuration, connection and transmission management on all APIs involved around P2P communication. It follows common implementation patterns of WebRTC by using custom events through an event emitter.
+Simplifies the process of configuration, connection and transmission management on all APIs involved around P2P communication.
+
+It follows common implementation patterns of WebRTC by using custom events and a modest Api.
 
 > Work in progress!
 
