@@ -3,7 +3,9 @@ Simplifies the process of configuration, connection and transmission management 
 
 > Work in progress!
 
-It follows common implementation patterns of WebRTC by using custom events and a modest Api. Read more about about WebRTC connectivity at [https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Architecture/Connectivity](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Architecture/Connectivity)
+PeerJS follows common implementation patterns of WebRTC by using custom events and a modest Api. 
+
+Read more about WebRTC connectivity at [https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Architecture/Connectivity](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Architecture/Connectivity)
 
 The idea is to try to do 1 configuration and use a set of events to handle actions. This assumes you have a Signaling server that uses Web Sockets for communication and STUN/TURN servers to deal with connectivity (because of firewalls or whatever).
 
